@@ -119,8 +119,8 @@ get_trans_lik <- function(i, j, l, h2f1_coefs){
       # Then, we have to have no mutation in the growth phase of j
 
       # Log of: P(pick outside host with correct major allele) * P(every bottleneck virion features that allele) * No mutations in growth phase
-      p_all_a1 <- log(q1[all_a1]) + log(1-l$mu*delta_t) + (1/sqrt(l$p))*log(1-l$p)
-      p_all_a2 <- log(q2[all_a2]) + log(1-l$mu*delta_t) + (1/sqrt(l$p))*log(1-l$p)
+      p_all_a1 <- log(q1[all_a1]) + l$A[j]*log(1-l$mu*delta_t) + (1/sqrt(l$p))*log(1-l$p)
+      p_all_a2 <- log(q2[all_a2]) + l$A[j]*log(1-l$mu*delta_t) + (1/sqrt(l$p))*log(1-l$p)
 
 
     }else{
@@ -142,8 +142,8 @@ get_trans_lik <- function(i, j, l, h2f1_coefs){
 
       # first term here: q1 is the probability we pick someone in general population with correct major allele
       # we then assume this person DOESN'T have an iSNV at the given site, so we evolve the 100% fraction by (1 - mu*delta_t).
-      p_cont_homo <- (q1[cont] * (1-l$mu*delta_t) * dspecial(l$x[[j]][cont], 1, l$p) +
-                        q2[cont] * (1-l$mu*delta_t) * dspecial(1 - l$x[[j]][cont], 1, l$p)) *
+      p_cont_homo <- (q1[cont] * (1-l$mu*delta_t)^(l$A[j]) * dspecial(l$x[[j]][cont], l$A[j], l$p) +
+                        q2[cont] * (1-l$mu*delta_t)^(l$A[j]) * dspecial(1 - l$x[[j]][cont], l$A[j], l$p)) *
         (1 - (1-l$p)^(1/sqrt(l$p)))
 
     }else{
@@ -160,9 +160,9 @@ get_trans_lik <- function(i, j, l, h2f1_coefs){
       # Here we need to multiply by a factor that every choice of bottleneck virion is EITHER a1 or a2.
       # This will always be equal to (1-l$mu*delta_t) + l$mu*delta_t/3, since we assume external cases have no appreciable iSNVs
 
-      p_cont_hetero <- (1 - l$mu*delta_t + l$mu*delta_t/3) *
-        (dbinbeta(l$x[[j]][cont], 1, l$mu*delta_t/3, h2f1_coefs) * q1[cont] +
-           dbinbeta(l$x[[j]][cont], 1, 1 - l$mu*delta_t, h2f1_coefs) * q2[cont])
+      p_cont_hetero <- (1 - l$mu*delta_t + l$mu*delta_t/3)^(l$A[j]) *
+        (dbinbeta(l$x[[j]][cont], l$A[j], l$mu*delta_t/3, h2f1_coefs) * q1[cont] +
+           dbinbeta(l$x[[j]][cont], l$A[j], 1 - l$mu*delta_t, h2f1_coefs) * q2[cont])
 
 
     }else{
