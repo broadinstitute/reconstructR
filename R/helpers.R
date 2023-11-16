@@ -382,6 +382,21 @@ process_vcf <- function(i, filepath, files, filters, cons){
     # Delete observations where we're not actually making a substitution
     vcf <- vcf[vcf$REF %in% c("A", "C", "G", "T"), ]
     vcf <- vcf[vcf$ALT %in% c("A", "C", "G", "T"), ]
+
+    # Mask sites with >2 alleles, and take only the to most frequent ones
+    to_mask_multi <- c()
+    for (p in unique(vcf$POS)) {
+      if(sum(vcf$POS == p & vcf$TOT_AF != 1) > 1){
+        where <- which(vcf$POS == p)
+        max_where <- where[which.max(vcf$ALT_COUNT[where])]
+        to_mask_multi <- c(to_mask_multi, setdiff(where, max_where))
+      }
+    }
+    if(length(to_mask_multi) > 0){
+      vcf <- vcf[-to_mask_multi, , drop=F]
+    }
+
+
   }
 
   vcf

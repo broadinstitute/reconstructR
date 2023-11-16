@@ -119,8 +119,8 @@ get_trans_lik <- function(i, j, l, h2f1_coefs){
       # Then, we have to have no mutation in the growth phase of j
 
       # Log of: P(pick outside host with correct major allele) * P(every bottleneck virion features that allele) * No mutations in growth phase
-      p_all_a1 <- log(q1[all_a1]) + l$A[j]*log(1-l$mu*delta_t) + (1/sqrt(l$p))*log(1-l$p)
-      p_all_a2 <- log(q2[all_a2]) + l$A[j]*log(1-l$mu*delta_t) + (1/sqrt(l$p))*log(1-l$p)
+      p_all_a1 <- log(q1[all_a1]) + log(1-l$mu*delta_t) + (1/sqrt(l$p))*log(1-l$p)
+      p_all_a2 <- log(q2[all_a2]) + log(1-l$mu*delta_t) + (1/sqrt(l$p))*log(1-l$p)
 
 
     }else{
@@ -142,8 +142,8 @@ get_trans_lik <- function(i, j, l, h2f1_coefs){
 
       # first term here: q1 is the probability we pick someone in general population with correct major allele
       # we then assume this person DOESN'T have an iSNV at the given site, so we evolve the 100% fraction by (1 - mu*delta_t).
-      p_cont_homo <- (q1[cont] * (1-l$mu*delta_t)^(l$A[j]) * dspecial(l$x[[j]][cont], l$A[j], l$p) +
-                        q2[cont] * (1-l$mu*delta_t)^(l$A[j]) * dspecial(1 - l$x[[j]][cont], l$A[j], l$p)) *
+      p_cont_homo <- (q1[cont] * (1-l$mu*delta_t) * dspecial(l$x[[j]][cont], 1, l$p) +
+                        q2[cont] * (1-l$mu*delta_t) * dspecial(1 - l$x[[j]][cont], 1, l$p)) *
         (1 - (1-l$p)^(1/sqrt(l$p)))
 
     }else{
@@ -160,9 +160,9 @@ get_trans_lik <- function(i, j, l, h2f1_coefs){
       # Here we need to multiply by a factor that every choice of bottleneck virion is EITHER a1 or a2.
       # This will always be equal to (1-l$mu*delta_t) + l$mu*delta_t/3, since we assume external cases have no appreciable iSNVs
 
-      p_cont_hetero <- (1 - l$mu*delta_t + l$mu*delta_t/3)^(l$A[j]) *
-        (dbinbeta(l$x[[j]][cont], l$A[j], l$mu*delta_t/3, h2f1_coefs) * q1[cont] +
-           dbinbeta(l$x[[j]][cont], l$A[j], 1 - l$mu*delta_t, h2f1_coefs) * q2[cont])
+      p_cont_hetero <- (1 - l$mu*delta_t + l$mu*delta_t/3) *
+        (dbinbeta(l$x[[j]][cont], 1, l$mu*delta_t/3, h2f1_coefs) * q1[cont] +
+           dbinbeta(l$x[[j]][cont], 1, 1 - l$mu*delta_t, h2f1_coefs) * q2[cont])
 
 
     }else{
@@ -243,7 +243,12 @@ get_u_trans_lik <- function(i, j, l){
   lambda <- l$mu/l$p
 
   # Solving for the difference in time of transmission and time to get 1/sqrt(p) virions...
-  delta_t <- l$t_E[j] - (l$t_E[i] + (1/(lambda * log(l$w)))*log(1/(l$A[i] * sqrt(l$p))))
+  # (if index case, just set this to 3 days)
+  if(i==1){
+    delta_t <- 3
+  }else{
+    delta_t <- l$t_E[j] - (l$t_E[i] + (1/(lambda * log(l$w)))*log(1/(l$A[i] * sqrt(l$p))))
+  }
 
   if(delta_t > 0){
 
@@ -264,58 +269,38 @@ get_u_trans_lik <- function(i, j, l){
 # Genomic likelihood function for un-mutated positions on the genome, i.e. sites where everyone has the same allele at 100%
 get_u_lik <- function(i, l, sum_depths, filters, sum_beta_CDF){
 
-  if(i==1){
-    return(0)
+  out <- 0
+  # Who does the virus get passed on to?
+  onward <- which(l$anc == i)
+  for (j in onward) {
+    out <- out + get_u_trans_lik(i,j,l)
+  }
+
+  # Time from i's ending expo growth phase stage to transmission
+  # lambda is the exponential growth rate of the virus, i.e. we have A*exp(t*l) virions at time t
+  if(i == 1){
+    return(out)
   }else{
 
-    out <- 0
-    # Who does the virus get passed on to?
-    onward <- which(l$anc == i)
-    for (j in onward) {
-      out <- out + get_u_trans_lik(i,j,l)
-    }
-
-    # Time from i's ending expo growth phase stage to transmission
-    # lambda is the exponential growth rate of the virus, i.e. we have A*exp(t*l) virions at time t
     lambda <- l$mu/l$p
 
     # Solving for the difference in time of transmission and time to get 1/sqrt(p) virions...
     delta_t <- l$t_test[i] - (l$t_E[i] + (1/(lambda * log(l$w)))*log(1/(l$A[i] * sqrt(l$p))))
 
     if(delta_t > 0){
+      out <- out + sum_depths[i] * log(
+        p_below_af(l$p, sum_beta_CDF, sum(l$A[onward])) * (1 - (1 - l$p)^(1/sqrt(l$p))) + # probability if we do get a mutation in exp growth phase
+          (1 - l$p)^(1/sqrt(l$p))
+      ) +
 
+        # ... plus indicator that quiescent term doesn't exceed the filter
+        ifelse(l$mu*delta_t + l$e < filters$af, 0, -Inf)
 
-
-
-    # probability that a mutation in the growth phase doesn't rise above filter$af at all sites with sufficient read data...
-
-
-    out <- out + sum_depths[i] * log(
-      p_below_af(l$p, sum_beta_CDF, sum(l$A[onward])) * (1 - (1 - l$p)^(1/sqrt(l$p))) + # probability if we do get a mutation in exp growth phase
-      (1 - l$p)^(1/sqrt(l$p))
-    ) +
-
-      # ... plus indicator that quiescent term doesn't exceed the filter
-      ifelse(l$mu*delta_t + l$e < filters$af, 0, -Inf)
-
-
-
-    #p_no <- sum_depths[[i]]*log(1-l$mu*delta_t-l$e) + l$K*(1/sqrt(l$p))*log(1-l$p)
-     #thresh <- pmin(depths[[i]]*filters$af, filters$call)
-
-     #p_no <- sum(pbinom(thresh[depths[[i]] > filters$depth], (depths[[i]])[depths[[i]] > filters$depth], l$mu*delta_t, log.p = T)) + l$K*(1/sqrt(l$p))*log(1-l$p)
-
-    #p_no <- l$K*(1/sqrt(l$p))*log(1-l$p) #+ l$K * (pbinom(filters$call, round(sum_depths[[i]] / K), l$mu*(delta_t), log.p = T))
-
-
-    return(out)
-
+      return(out)
     }else{
       return(-Inf)
     }
-
   }
-  #delta_t <- l$t_test[i] - l$t_I[i]
 }
 
 
