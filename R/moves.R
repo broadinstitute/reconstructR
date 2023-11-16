@@ -24,7 +24,7 @@
 
 
 # General update function for epi parameters
-update <- function(l_old, param, reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF){
+update <- function(l_old, param, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF){
   l_new <- l_old
 
   l_new[[param]] <- l_old[[param]] + rnorm(1, 0, vars[[param]])
@@ -33,7 +33,7 @@ update <- function(l_old, param, reads, filters, h2f1_coefs, sum_depths, mins, m
     return(l_old)
   }else{
 
-    l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+    l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
     delta <- l_new$e_lik - l_old$e_lik
 
     if(param == "mu" | param == "e" | param == "p" | param == "w"){
@@ -56,7 +56,7 @@ update <- function(l_old, param, reads, filters, h2f1_coefs, sum_depths, mins, m
 }
 
 # Update proportions of a2 at end of growth phase, for all sites simultaneously in a given host
-update_x <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF){
+update_x <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF){
   l_new <- l_old
   j <- sample(2:l_new$N, 1) # should we also do this for index case? probably not.
 
@@ -105,7 +105,7 @@ update_x <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, 
 }
 
 # Update t_E
-update_t_E <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_t_E <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
 
   l_new <- l_old
   j <- sample(2:l_new$N, 1)
@@ -127,7 +127,7 @@ update_t_E <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs
   l_new$t_E[j] <- runif(1, min_t_E, max_t_E)
 
   # New epi likelihood
-  l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+  l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
   # New genomic likelihood for h and j
   if(l_new$L > 0){
@@ -145,7 +145,7 @@ update_t_E <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs
 }
 
 # Update t_I
-update_t_I <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_t_I <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
 
   l_new <- l_old
   j <- sample(2:l_new$N, 1)
@@ -160,7 +160,7 @@ update_t_I <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs
   l_new$t_I[j] <- runif(1, min_t_I, max_t_I)
 
   # Get new epi likelihood
-  l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+  l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
   # New genomic likelihood for j
   if(l_new$L > 0){
@@ -178,7 +178,7 @@ update_t_I <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs
 
 
 # Update ancestor
-update_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
 
   l_new <- l_old
 
@@ -205,7 +205,7 @@ update_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins,
     l_new$g_lik[,c(j, h_old, h_new)] <- sapply(c(j, h_old, h_new), get_g_lik, l = l_new, reads = reads, filters = filters, h2f1_coefs = h2f1_coefs)
   }
   l_new$u_lik[c(j, h_old, h_new)] <- sapply(c(j, h_old, h_new), get_u_lik, l_new, sum_depths = sum_depths, filters = filters, sum_beta_CDF = sum_beta_CDF)
-  l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+  l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
   if(log(runif(1)) > sum(l_new$g_lik) - sum(l_old$g_lik) + sum(l_new$u_lik) - sum(l_old$u_lik) + l_new$e_lik - l_old$e_lik){
     return(l_old)
@@ -215,7 +215,7 @@ update_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins,
 }
 
 # Update ancestor, plus x (in new/old ancestor) at sites with consensus change
-update_ancestor_x <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_ancestor_x <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
 
   l_new <- l_old
 
@@ -256,7 +256,7 @@ update_ancestor_x <- function(l_old, reads, filters, h2f1_coefs, sum_depths, min
 
   l_new$g_lik[,to_update] <- sapply(to_update, get_g_lik, l = l_new, reads = reads, filters = filters, h2f1_coefs = h2f1_coefs)
   l_new$u_lik[to_update] <- sapply(to_update, get_u_lik, l_new, sum_depths = sum_depths, filters = filters, sum_beta_CDF = sum_beta_CDF)
-  l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+  l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
   if(log(runif(1)) > sum(l_new$g_lik) - sum(l_old$g_lik) + sum(l_new$u_lik) - sum(l_old$u_lik) + l_new$e_lik - l_old$e_lik){
     return(l_old)
@@ -308,7 +308,7 @@ update_ancestor_x <- function(l_old, reads, filters, h2f1_coefs, sum_depths, min
 ## Update t_E, t_I, and ancestor
 ## Also idea: pick the new ancestor first, then pick the new t_E, t_I
 ### Also also idea: pick new x, based on original read data
-update_epi_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_epi_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
   l_new <- l_old
   # resample the ancestor of j
   j <- sample(2:l_new$N, 1)
@@ -363,7 +363,7 @@ update_epi_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, m
       l_new$g_lik[,c(j, h_old, h_new)] <- sapply(c(j, h_old, h_new), get_g_lik, l = l_new, reads = reads, filters = filters, h2f1_coefs = h2f1_coefs)
     }
     l_new$u_lik[c(j, h_old, h_new)] <- sapply(c(j, h_old, h_new), get_u_lik, l_new, sum_depths = sum_depths, filters = filters, sum_beta_CDF = sum_beta_CDF)
-    l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+    l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
     if(log(runif(1)) >
        sum(l_new$g_lik) - sum(l_old$g_lik) +
@@ -382,7 +382,7 @@ update_epi_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, m
 
 
 # Update t_E and ancestor for a host, simultaneously
-update_t_E_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_t_E_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
   l_new <- l_old
   # resample the ancestor of j
   j <- sample(2:l_new$N, 1)
@@ -434,7 +434,7 @@ update_t_E_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, m
     l_new$g_lik[,c(j, h_old, h_new)] <- sapply(c(j, h_old, h_new), get_g_lik, l = l_new, reads = reads, filters = filters, h2f1_coefs = h2f1_coefs)
   }
   l_new$u_lik[c(j, h_old, h_new)] <- sapply(c(j, h_old, h_new), get_u_lik, l_new, sum_depths = sum_depths, filters = filters, sum_beta_CDF = sum_beta_CDF)
-  l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+  l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
   if(log(runif(1)) >
      sum(l_new$g_lik) - sum(l_old$g_lik) +
@@ -450,7 +450,7 @@ update_t_E_ancestor <- function(l_old, reads, filters, h2f1_coefs, sum_depths, m
 
 
 # Swap infector/infectee
-update_swap <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_swap <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
   l_new <- l_old
   # resample the ancestor of j
   if(length(which(l_new$anc != 1)) > 1){
@@ -476,7 +476,7 @@ update_swap <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, max
     # Swap bottleneck sizes
     l_new$A[c(h,j)] <- l_new$A[c(j,h)]
 
-    l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+    l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
     if(l_new$e_lik == -Inf){
       return(l_old)
@@ -498,7 +498,7 @@ update_swap <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, max
 }
 
 # Swap infector/infectee + kids
-update_swap_kids <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_swap_kids <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
   l_new <- l_old
   # resample the ancestor of j
   if(length(which(l_new$anc != 1)) > 1){
@@ -528,7 +528,7 @@ update_swap_kids <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins
     l_new$anc[which(l_old$anc == j)] <- h
     l_new$anc[which(l_new$anc == h)] <- j
 
-    l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+    l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
     if(l_new$e_lik == -Inf){
       return(l_old)
@@ -552,7 +552,7 @@ update_swap_kids <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins
 
 
 # Add or remove particle from bottleneck
-update_neck <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF){
+update_neck <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF){
   l_new <- l_old
   # change a particle in the bottleneck infecting j
   j <- sample(2:l_new$N, 1)
@@ -573,7 +573,7 @@ update_neck <- function(l_old, reads, filters, h2f1_coefs, sum_depths, mins, max
     }
     l_new$u_lik[h] <- get_u_lik(h, l_new, sum_depths = sum_depths, filters = filters, sum_beta_CDF = sum_beta_CDF)
     l_new$u_lik[j] <- get_u_lik(j, l_new, sum_depths = sum_depths, filters = filters, sum_beta_CDF = sum_beta_CDF)
-    l_new$e_lik <- get_e_lik(l_new, mins, maxs)
+    l_new$e_lik <- get_e_lik(l_new, mins, maxs, prior_params)
 
     if(log(runif(1)) > sum(l_new$g_lik) - sum(l_old$g_lik) + sum(l_new$u_lik) - sum(l_old$u_lik) + l_new$e_lik - l_old$e_lik){
       return(l_old)

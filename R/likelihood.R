@@ -23,7 +23,7 @@
 ### Likelihood functions
 
 # Epidemiological likelihood function
-get_e_lik <- function(l, mins, maxs){
+get_e_lik <- function(l, mins, maxs, prior_params){
 
   has_anc <- which(!is.na(l$anc) & (l$anc != 1))
   # Sojourn intervals
@@ -58,8 +58,8 @@ get_e_lik <- function(l, mins, maxs){
     ) +
 
     # log priors
-    prior("mu", l$mu, mins, maxs) + prior("e", l$e, mins, maxs) + prior("gamma", l$gamma, mins, maxs) + prior("alpha", l$alpha, mins, maxs) + prior("p", l$p, mins, maxs) + prior("w", l$w, mins, maxs) +
-    prior("tau_T", l$tau_T, mins, maxs) + prior("tau_E", l$tau_E, mins, maxs) + prior("var_T", l$var_T, mins, maxs) + prior("var_E", l$var_E, mins, maxs)
+    prior("mu", l$mu, mins, maxs, prior_params) + prior("e", l$e, mins, maxs, prior_params) + prior("gamma", l$gamma, mins, maxs, prior_params) + prior("alpha", l$alpha, mins, maxs, prior_params) + prior("p", l$p, mins, maxs, prior_params) + prior("w", l$w, mins, maxs, prior_params) +
+    prior("tau_T", l$tau_T, mins, maxs, prior_params) + prior("tau_E", l$tau_E, mins, maxs, prior_params) + prior("var_T", l$var_T, mins, maxs, prior_params) + prior("var_E", l$var_E, mins, maxs, prior_params)
 
 }
 

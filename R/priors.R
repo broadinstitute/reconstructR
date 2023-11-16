@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 ### LOG Priors
-prior_mu <- function(x, mins, maxs){
+prior_mu <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$mu, 0.001) - pexp(mins$mu, 0.001)
   if(x < mins$mu){
     -Inf
@@ -32,7 +32,7 @@ prior_mu <- function(x, mins, maxs){
   }
 }
 
-prior_e <- function(x, mins, maxs){
+prior_e <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$e, 0.001) - pexp(mins$e, 0.001)
   if(x < mins$e){
     -Inf
@@ -43,7 +43,7 @@ prior_e <- function(x, mins, maxs){
   }
 }
 
-prior_p <- function(x, mins, maxs){
+prior_p <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$p, 0.001) - pexp(mins$p, 0.001)
   if(x < mins$p){
     -Inf
@@ -54,7 +54,7 @@ prior_p <- function(x, mins, maxs){
   }
 }
 
-prior_w <- function(x, mins, maxs){
+prior_w <- function(x, mins, maxs, prior_params){
   norm <- 1/(maxs$w - mins$w)
   if(x < mins$w){
     -Inf
@@ -65,7 +65,7 @@ prior_w <- function(x, mins, maxs){
   }
 }
 
-prior_gamma <- function(x, mins, maxs){
+prior_gamma <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$gamma, 0.001) - pexp(mins$gamma, 0.001)
   if(x < mins$gamma){
     -Inf
@@ -78,11 +78,11 @@ prior_gamma <- function(x, mins, maxs){
 
 
 #### NOTE THE PRIOR HERE, depends a lot on what we're doing
-prior_alpha <- function(x, mins, maxs){
-  dbeta(x, 1, 1e10, log = T)
+prior_alpha <- function(x, mins, maxs, prior_params){
+  dbeta(x, prior_params$alpha[1], prior_params$alpha[2], log = T)
 }
 
-prior_tau_T <- function(x, mins, maxs){
+prior_tau_T <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$tau_T, 0.001) - pexp(mins$tau_T, 0.001)
   if(x < mins$tau_T){
     -Inf
@@ -92,7 +92,7 @@ prior_tau_T <- function(x, mins, maxs){
     -Inf
   }
 }
-prior_tau_E <- function(x, mins, maxs){
+prior_tau_E <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$tau_E, 0.001) - pexp(mins$tau_E, 0.001)
   if(x < mins$tau_E){
     -Inf
@@ -102,7 +102,7 @@ prior_tau_E <- function(x, mins, maxs){
     -Inf
   }
 }
-prior_tau_I <- function(x, mins, maxs){
+prior_tau_I <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$tau_I, 0.001) - pexp(mins$tau_I, 0.001)
   if(x < mins$tau_I){
     -Inf
@@ -112,7 +112,7 @@ prior_tau_I <- function(x, mins, maxs){
     -Inf
   }
 }
-prior_var_T <- function(x, mins, maxs){
+prior_var_T <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$var_T, 0.001) - pexp(mins$var_T, 0.001)
   if(x < mins$var_T){
     -Inf
@@ -122,7 +122,7 @@ prior_var_T <- function(x, mins, maxs){
     -Inf
   }
 }
-prior_var_E <- function(x, mins, maxs){
+prior_var_E <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$var_E, 0.001) - pexp(mins$var_E, 0.001)
   if(x < mins$var_E){
     -Inf
@@ -132,7 +132,7 @@ prior_var_E <- function(x, mins, maxs){
     -Inf
   }
 }
-prior_var_I <- function(x, mins, maxs){
+prior_var_I <- function(x, mins, maxs, prior_params){
   norm <- pexp(maxs$var_I, 0.001) - pexp(mins$var_I, 0.001)
   if(x < mins$var_I){
     -Inf
@@ -143,31 +143,31 @@ prior_var_I <- function(x, mins, maxs){
   }
 }
 
-prior <- function(param, x, mins, maxs){
+prior <- function(param, x, mins, maxs, prior_params){
   if(param == "mu"){
-    prior_mu(x, mins, maxs)
+    prior_mu(x, mins, maxs, prior_params)
   }else if(param == "e"){
-    prior_e(x, mins, maxs)
+    prior_e(x, mins, maxs, prior_params)
   }else if(param == "p"){
-    prior_p(x, mins, maxs)
+    prior_p(x, mins, maxs, prior_params)
   }else if(param == "w"){
-    prior_w(x, mins, maxs)
+    prior_w(x, mins, maxs, prior_params)
   }else if(param == "gamma"){
-    prior_gamma(x, mins, maxs)
+    prior_gamma(x, mins, maxs, prior_params)
   }else if(param == "alpha"){
-    prior_alpha(x, mins, maxs)
+    prior_alpha(x, mins, maxs, prior_params)
   }else if(param == "tau_T"){
-    prior_tau_T(x, mins, maxs)
+    prior_tau_T(x, mins, maxs, prior_params)
   }else if(param == "tau_E"){
-    prior_tau_E(x, mins, maxs)
+    prior_tau_E(x, mins, maxs, prior_params)
   }else if(param == "tau_I"){
-    prior_tau_I(x, mins, maxs)
+    prior_tau_I(x, mins, maxs, prior_params)
   }else if(param == "var_T"){
-    prior_var_T(x, mins, maxs)
+    prior_var_T(x, mins, maxs, prior_params)
   }else if(param == "var_E"){
-    prior_var_E(x, mins, maxs)
+    prior_var_E(x, mins, maxs, prior_params)
   }else if(param == "var_I"){
-    prior_var_I(x, mins, maxs)
+    prior_var_I(x, mins, maxs, prior_params)
   }
 }
 

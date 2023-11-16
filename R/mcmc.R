@@ -39,6 +39,7 @@ run_mcmc <- function(
     mins = NULL,
     maxs = NULL,
     vars = NULL,
+    prior_params = NULL,
     seed = T
 ){
 
@@ -117,6 +118,11 @@ run_mcmc <- function(
     vars$t_E <- 1
   }
 
+  if(is.null(prior_params)){
+    # For each of the epidemiological parameters, specify the standard deviation of the (normally-distributed) proposal density
+    prior_params <- list()
+    prior_params$alpha <- c(1, 1e10)
+  }
 
 
 
@@ -447,7 +453,7 @@ run_mcmc <- function(
   mcmc$anc[1] <- NA
 
   # Epidemiological likelihood (for the outbreak at large)
-  mcmc$e_lik <- get_e_lik(mcmc, mins, maxs)
+  mcmc$e_lik <- get_e_lik(mcmc, mins, maxs, prior_params)
 
   # Genomic likelihood (per person)
   if(mcmc$L > 0){
@@ -481,39 +487,39 @@ run_mcmc <- function(
   for (count in 1:N_iters) {
     # Update epi params
 
-    mcmc <- update(mcmc, "gamma", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
-    mcmc <- update(mcmc, "alpha", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
-    mcmc <- update(mcmc, "mu", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
-    mcmc <- update(mcmc, "e", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
-    mcmc <- update(mcmc, "p", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
-    mcmc <- update(mcmc, "w", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
+    mcmc <- update(mcmc, "gamma", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
+    mcmc <- update(mcmc, "alpha", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
+    mcmc <- update(mcmc, "mu", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
+    mcmc <- update(mcmc, "e", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
+    mcmc <- update(mcmc, "p", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
+    mcmc <- update(mcmc, "w", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
 
     if(ct_yes){
-      mcmc <- update(mcmc, "nu", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
-      mcmc <- update(mcmc, "xi", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
+      mcmc <- update(mcmc, "nu", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
+      mcmc <- update(mcmc, "xi", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
     }
 
-    mcmc <- update(mcmc, "tau_T", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
-    mcmc <- update(mcmc, "tau_E", reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
+    mcmc <- update(mcmc, "tau_T", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
+    mcmc <- update(mcmc, "tau_E", reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
 
     # Not updating variance in soujourn/exposed period
     #mcmc <- update(mcmc, "var_T")
     #mcmc <- update(mcmc, "var_E")
 
-    mcmc <- update_t_E(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
-    mcmc <- update_t_E_ancestor(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
-    mcmc <- update_t_I(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
+    mcmc <- update_t_E(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
+    mcmc <- update_t_E_ancestor(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
+    mcmc <- update_t_I(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
     if(mcmc$L > 0){
-      mcmc <- update_ancestor_x(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
+      mcmc <- update_ancestor_x(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
     }
-    mcmc <- update_swap(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
-    mcmc <- update_ancestor(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
-    mcmc <- update_neck(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
-    mcmc <- update_swap_kids(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
+    mcmc <- update_swap(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
+    mcmc <- update_ancestor(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
+    mcmc <- update_neck(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
+    mcmc <- update_swap_kids(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
     if(mcmc$L > 0){
-      mcmc <- update_x(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, vars, sum_beta_CDF)
+      mcmc <- update_x(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, vars, sum_beta_CDF)
     }
-    mcmc <- update_epi_ancestor(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, sum_beta_CDF)
+    mcmc <- update_epi_ancestor(mcmc, reads, filters, h2f1_coefs, sum_depths, mins, maxs, prior_params, sum_beta_CDF)
 
     # Code to ensure we're correctly calculating the genomic likelihood
     # if(!identical(mcmc$g_lik, sapply(1:N, get_g_lik, l = mcmc, reads = reads, filters = filters, h2f1_coefs = h2f1_coefs))){
