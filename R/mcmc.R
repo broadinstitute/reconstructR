@@ -7,8 +7,10 @@
 #' @param mins Minimum values of model parameters. NULL = defaults.
 #' @param maxs Maximum values of model parameters. NULL = defaults.
 #' @param vars Variances of MCMC moves for model paramaters. NULL = defaults.
+#' @param prior_params List of hyperparamters to specify the prior distributions. NULL = defaults.
 #' @param seed Whether or not to set the seed, for replicable results. Defaults to TRUE.
-#' @return A list, where each entry is the current state of the Markov chain (multiples of 100 steps).
+#' @param sample_every Number of iterations per sample. Defaults to 100.
+#' @return A list, where each entry is the current state of the Markov chain (multiples of "sample_every" steps).
 #' @export
 
 # MIT License
@@ -40,7 +42,8 @@ run_mcmc <- function(
     maxs = NULL,
     vars = NULL,
     prior_params = NULL,
-    seed = T
+    seed = T,
+    sample_every = 100
 ){
 
   ### Establish default values for filters, mins, maxs, and vars
@@ -482,7 +485,7 @@ run_mcmc <- function(
 
   new_res <- mcmc
 
-  results <- rep(list(new_res), N_iters / 100)
+  results <- rep(list(new_res), floor(N_iters / sample_every))
 
   for (count in 1:N_iters) {
     # Update epi params
@@ -534,11 +537,11 @@ run_mcmc <- function(
     #   print(count)
     # }
 
-    if(count %% 100 == 0){
+    if(count %% sample_every == 0){
 
       message(paste(count, "iterations complete. Log-likeihood =", round(sum(mcmc$g_lik) + sum(mcmc$u_lik) + mcmc$e_lik, 2)))
       new_res <- mcmc
-      results[[count / 100]] <- new_res
+      results[[floor(count / sample_every)]] <- new_res
     }
   }
 
