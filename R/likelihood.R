@@ -42,7 +42,10 @@ get_e_lik <- function(l, mins, maxs, prior_params){
     #sum(dnorm(log10(l$A[2:l$N] * exp((l$t_I[2:l$N] - l$t_E[2:l$N]) * (l$mu/l$p ))), mean = 10, sd = 2, log = T)) +
 
     # Infectious at time of transmission
-    sum(log(gamma_surv(l$t_E[has_anc], (l$t_I[l$anc[has_anc]]), mean = l$tau_I, var = l$var_I))) +
+    sum(gamma_surv(l$t_E[has_anc], (l$t_I[l$anc[has_anc]]), mean = l$tau_I, var = l$var_I)) +
+
+    # Infectious at time of transmission, for index cases. Assume 3 day interval.
+    sum(l$anc[2:l$N] == 1) * gamma_surv(3, 0, mean = l$tau_I, var = l$var_I) +
 
     # Size of bottleneck
     sum(dpois(l$A[2:l$N] - 1, l$gamma, log = T)) +
@@ -237,7 +240,7 @@ get_g_lik <- function(i, l, reads, filters, h2f1_coefs){
 
 
 # Likelihood of a singular transmission event, i to j
-get_u_trans_lik <- function(i, j, l){
+get_u_trans_lik <- function(i, j, l, sum_depths){
   # Time from i's ending expo growth phase stage to transmission
   # lambda is the exponential growth rate of the virus, i.e. we have A*exp(t*l) virions at time t
   lambda <- l$mu/l$p
@@ -258,8 +261,8 @@ get_u_trans_lik <- function(i, j, l){
     # The probability that we get 100% major allele in j is (approx) the probability that the bottleneck is all major
     p <- l$A[j]*log(q)
 
-    # And, this has to happen at all K sites for which no mutation ever occurs
-    return(l$K*p)
+    # And, this has to happen at all sites for which no mutation ever occurs (and we have read data in j)
+    return(sum_depths[j] *p)
   }else{
     return(-Inf)
   }
@@ -273,7 +276,7 @@ get_u_lik <- function(i, l, sum_depths, filters, sum_beta_CDF){
   # Who does the virus get passed on to?
   onward <- which(l$anc == i)
   for (j in onward) {
-    out <- out + get_u_trans_lik(i,j,l)
+    out <- out + get_u_trans_lik(i,j,l,sum_depths)
   }
 
   # Time from i's ending expo growth phase stage to transmission
@@ -289,7 +292,7 @@ get_u_lik <- function(i, l, sum_depths, filters, sum_beta_CDF){
 
     if(delta_t > 0){
       out <- out + sum_depths[i] * log(
-        p_below_af(l$p, sum_beta_CDF, sum(l$A[onward])) * (1 - (1 - l$p)^(1/sqrt(l$p))) + # probability if we do get a mutation in exp growth phase
+        pspecial(filters$af, l$A[i], l$p) * (1 - (1 - l$p)^(1/sqrt(l$p))) + # probability if we do get a mutation in exp growth phase, stays below filter
           (1 - l$p)^(1/sqrt(l$p))
       ) +
 

@@ -104,7 +104,7 @@ run_mcmc <- function(
     vars$mu <- 1e-6
     vars$e <- 1e-12
     vars$gamma <- 0.5
-    vars$alpha <- 1e-9
+    vars$alpha <- 1e-1
     vars$p <- 1e-6
     vars$w <- 50 # number of offspring of a virion per cycle
 
@@ -124,7 +124,7 @@ run_mcmc <- function(
   if(is.null(prior_params)){
     # For each of the epidemiological parameters, specify the standard deviation of the (normally-distributed) proposal density
     prior_params <- list()
-    prior_params$alpha <- c(1, 1e10)
+    prior_params$alpha <- c(1, 1)
   }
 
 
@@ -363,7 +363,7 @@ run_mcmc <- function(
   mcmc$mu <- 1e-6 # mutation rate parameter after exponential growth phase
   mcmc$e <- 1e-10 # error rate parameter
   mcmc$gamma <- 2 # bottleneck size is Geom(1/(1+gamma))
-  mcmc$alpha <- min(1e-10, maxs$alpha / 2) # number of index cases is 1 + Bin(N-1, alpha)
+  mcmc$alpha <- min(0.5, maxs$alpha / 2) # number of index cases is 1 + Bin(N-1, alpha)
   mcmc$p <- 1e-6 # substitution rate at given nucleotide per RNA replication event
   mcmc$w <- 1000 # number of offspring of a virion per cycle
 

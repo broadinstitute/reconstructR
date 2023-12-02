@@ -39,16 +39,12 @@ gamma_dens <- function(x, mean, var){
 }
 
 
-# Survival function of Gamma distribution given mean and variance, evaluated at x - y
+# LOG Survival function of Gamma distribution given mean and variance, evaluated at x - y
 gamma_surv <- function(x, y, mean, var){
-  if(mean > 0 & var > 0 & all(x > y, na.rm = T)){
-    # In order for this to integrate to 1, must divide by the integral of survival function from 0 to infinity
-    # But this is simply equal to the mean! So really, just need to divide by the mean
-    out <- pgamma(x - y, shape = mean^2/var, rate = mean/var, lower.tail = F) / mean
-    out[is.na(out)] <- 1
-    out
+  if(mean > 0 & var > 0 & all(x > y)){
+    pgamma(x - y, shape = mean^2/var, rate = mean/var, lower.tail = F, log = T)
   }else{
-    0
+    -Inf
   }
 }
 
@@ -83,6 +79,11 @@ evolve <- function(x, a1, a2, mu, e, t){
 # Special distribution that captures de novo mutations in expo growth phase
 dspecial <- function(x, A, p){
   -(((1-x)^(-1+A) * (-1+x-A* x+(1-x)^(1/sqrt(p)) *(1+(-1+A+(1/sqrt(p))) *x)))/((1/sqrt(p)) *x^2))
+}
+
+# Integral of the above
+pspecial <- function(x, A, p){
+  ((-1+(1-x)^(1/sqrt(p))) * (1-x)^A + (1/sqrt(p)) * x)/((1/sqrt(p)) * x)
 }
 
 # Probability of no mutations being observed out of k reads, given bottleneck size, mutation rate, delta t, and p, assuming a mutation happens in expo growth phase
