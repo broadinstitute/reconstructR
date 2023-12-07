@@ -16,15 +16,16 @@ RUN apt-get update && \
 RUN apt-get -y -qq install \
     less nano vim git wget curl jq zstd parallel locales \
     gnupg libssl-dev libcurl4-openssl-dev \
-    r-base r-base-dev \
+    libxml2 libxml2-dev \
+    imagemagick libmagick++-dev \
+    texlive-base texlive-latex-recommended texlive texlive-latex-extra texlive-extra-utils texlive-fonts-extra \
+    fonts-roboto \
+    r-base r-base-dev r-cran-devtools r-cran-tidyverse \
   && apt-get clean
 
 # Set default locale to en_US.UTF-8
 RUN locale-gen en_US.UTF-8
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
-
-# Install useful R packages
-RUN R -e "install.packages(c( 'devtools', 'BiocManager', 'tidyverse' ))"
 
 # Install reconstructR R package -- invalidate cache any time github main branch updates
 ADD https://api.github.com/repos/broadinstitute/reconstructR/git/refs/heads/main version.json
