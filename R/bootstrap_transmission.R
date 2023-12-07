@@ -65,8 +65,8 @@ bootstrap_transmission <- function(results, N_samples, uncorrelate = T, burnin =
 
     print(ggplot2::ggplot(p_data, ggplot2::aes(x = Host, y = value)) +
       ggplot2::geom_boxplot(outlier.size=-1, color = "#2255BB", fill = "#AACCEE") +
-      ylab("Number of Transmissions") +
-      theme_minimal())
+      ggplot2::ylab("Number of Transmissions") +
+      ggplot2::theme_minimal())
   }
 
   colnames(out) <- c("Index", paste(2:N))
