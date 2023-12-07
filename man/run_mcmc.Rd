@@ -10,7 +10,9 @@ run_mcmc(
   mins = NULL,
   maxs = NULL,
   vars = NULL,
-  seed = T
+  prior_params = NULL,
+  seed = T,
+  sample_every = 100
 )
 }
 \arguments{
@@ -24,10 +26,14 @@ run_mcmc(
 
 \item{vars}{Variances of MCMC moves for model paramaters. NULL = defaults.}
 
+\item{prior_params}{List of hyperparamters to specify the prior distributions. NULL = defaults.}
+
 \item{seed}{Whether or not to set the seed, for replicable results. Defaults to TRUE.}
+
+\item{sample_every}{Number of iterations per sample. Defaults to 100.}
 }
 \value{
-A list, where each entry is the current state of the Markov chain (multiples of 100 steps).
+A list, where each entry is the current state of the Markov chain (multiples of "sample_every" steps).
 }
 \description{
 This function executes the MCMC algorithm for outbreak reconstruction.
