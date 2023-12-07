@@ -9,18 +9,13 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
   apt-get -y -qq install software-properties-common && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
-  add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu focal-cran40/' && \
+  add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/' && \
   apt-get update
 
 # install all desired packages
 RUN apt-get -y -qq install \
     less nano vim git wget curl jq zstd parallel locales \
     gnupg libssl-dev libcurl4-openssl-dev \
-    libxml2 libxml2-dev \
-    imagemagick libmagick++-dev \
-    texlive-base texlive-latex-recommended texlive texlive-latex-extra texlive-extra-utils texlive-fonts-extra \
-    fonts-roboto \
-    libudunits2-dev libgdal-dev libgdal26 \
     r-base r-base-dev \
   && apt-get clean
 
