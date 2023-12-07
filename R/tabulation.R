@@ -50,13 +50,20 @@ tabulate <- function(
 
   adj_melt <- reshape2::melt(adj)
   adj_melt <- adj_melt[adj_melt$value > 0, ]
-  colnames(adj_melt) <- c("From", "To", "Probability")
+  colnames(adj_melt) <- c("From_Alias", "To_Alias", "Probability")
   adj_melt$Distance <- mapply(get_cons_dist, adj_melt$From, adj_melt$To, MoreArgs = list(reads=reads))
   adj_melt$Relationship <- mapply(summarize, adj_melt$From, adj_melt$To, MoreArgs = list(reads=reads))
   adj_melt[,1] <- paste(adj_melt[,1])
   adj_melt[,2] <- paste(adj_melt[,2])
   adj_melt[,1][adj_melt[,1] == "1"] <- "Index"
   rownames(adj_melt) <- NULL
+
+  dec <- decipher(results)
+  From_Name <- adj_melt$From_Alias
+  From_Name[From_Name != "Index"] <- dec$Name[match(From_Name[From_Name != "Index"], paste(dec$Alias))]
+  To_Name <- adj_melt$To_Alias
+  To_Name <- dec$Name[match(To_Name, paste(dec$Alias))]
+  adj_melt <- cbind(cbind(From_Name, To_Name), adj_melt)
 
   return(adj_melt)
 
