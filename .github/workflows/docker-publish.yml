@@ -10,10 +10,10 @@ on:
 
 env:
   # Use docker.io for Docker Hub if empty
-  REGISTRY: quay.io
+  REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
-  DOCKER_REPO: "quay.io/broadinstitute/reconstructr"
+  DOCKER_REPO: "ghcr.io/broadinstitute/reconstructr"
 
 jobs:
   build:
