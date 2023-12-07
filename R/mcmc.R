@@ -322,16 +322,16 @@ run_mcmc <- function(
   N_beta_CDF <- 1e5
   N_tot_outgoing <- maxs$A
 
+  # No longer using this argument; leaving as empty list for now
   sum_beta_CDF <- list()
-
-  for (s in 0:N_tot_outgoing) {
-    beta_CDFs <- pbeta(filters$af, 1, (1+s):(N_beta_CDF+s))
-
-    # helpful in MCMC algo: cumsum of the beta CDFs
-    sum_beta_CDF[[s+1]] <- cumsum(beta_CDFs * 1:N_beta_CDF / ((1+s):(N_beta_CDF+s)))
-
-    #print(s)
-  }
+  # for (s in 0:N_tot_outgoing) {
+  #   beta_CDFs <- pbeta(filters$af, 1, (1+s):(N_beta_CDF+s))
+  #
+  #   # helpful in MCMC algo: cumsum of the beta CDFs
+  #   sum_beta_CDF[[s+1]] <- cumsum(beta_CDFs * 1:N_beta_CDF / ((1+s):(N_beta_CDF+s)))
+  #
+  #   #print(s)
+  # }
 
 
 
