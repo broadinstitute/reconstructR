@@ -20,7 +20,8 @@ RUN apt-get -y -qq install \
     imagemagick libmagick++-dev \
     texlive-base texlive-latex-recommended texlive texlive-latex-extra texlive-extra-utils texlive-fonts-extra \
     fonts-roboto \
-    r-base r-base-dev r-cran-devtools r-cran-tidyverse r-cran-extradistr \
+    r-base r-base-dev r-cran-devtools \
+    r-cran-tidyverse r-cran-extradistr \
     r-cran-rcpp r-cran-rcppgsl r-cran-rcppparallel \
     r-cran-segmented r-cran-pixmap r-cran-ape r-cran-seqinr r-cran-ade4 \
   && apt-get clean
@@ -29,8 +30,10 @@ RUN apt-get -y -qq install \
 RUN locale-gen en_US.UTF-8
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
 
-# Install necessary R dependencies
-RUN R -e "for (lib in c( 'Rfast', 'LaplacesDemon', 'kmer', 'phylogram', 'aphid', 'insect' )) { install.packages(lib, dependencies=TRUE); library(lib, character.only=TRUE) }"
+# Install necessary R dependencies for reconstructR that don't have apt packages
+RUN R -e "for (lib in c( 'LaplacesDemon', 'kmer', 'phylogram', 'aphid', 'insect' )) { install.packages(lib, dependencies=TRUE); library(lib, character.only=TRUE) }"
+# Rfast in CRAN is broken, install from github
+RUN R -e "devtools::install_github('RfastOfficial/Rfast', dependencies=TRUE); library(Rfast)"
 
 # Install reconstructR R package -- invalidate cache any time github main branch updates
 ADD https://api.github.com/repos/broadinstitute/reconstructR/git/refs/heads/main version.json
