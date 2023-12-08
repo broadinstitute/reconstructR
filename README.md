@@ -32,8 +32,10 @@ After you have installed `reconstructR`, you will need to assemble the data that
     - This should be a csv file where the first column is titled \texttt{position} and each subsequent column is titled with the exact name of all genomic sequences in the `aligned.fasta` file. The `position` column should then have entries from 1 to the full length of the reference genome. Each subsequent column should then contain the sequencing read depth of the column's genome at the indicated position. 
     - For example if `aligned.fasta` contained three genomes named `genome_1`, `genome_2`, `genome_3` then `depth.csv` should look like:
       ```
-      depth = data.frame(position=1:29903,genome_1=round(rnorm(29903,50,10)),genome_2=round(rnorm(29903,100,10)),
-                     genome_3=round(rnorm(29903,70,10)))
+      depth = data.frame(position=1:29903,
+         genome_1=round(rnorm(29903,50,10)),
+         genome_2=round(rnorm(29903,100,10)),
+         genome_3=round(rnorm(29903,70,10)))
       print(head(depth))
       print(tail(depth))
       ```
@@ -41,7 +43,7 @@ After you have installed `reconstructR`, you will need to assemble the data that
     - This should be a csv file where the first column contains the exact name of all genomic sequences in the `aligned.fasta` file and the second column contains the number of days between the collection date of each sample and the earliest collected sample. 
     - For example if `aligned.fasta` contained three genomes named `genome_1`, `genome_2`, `genome_3` where `genome_1` was tested first, then `date.csv` should look like:
       ```
-      date = data.frame(col1=c("genome_1","genome_2","genome_3"),col2=c(0,2,4))
+      date = data.frame(col1=c("genome_1","genome_2","genome_3"), col2=c(0,2,4))
       print(date)
       ```
  - A folder called `vcf`
@@ -54,7 +56,7 @@ After you have installed `reconstructR`, you will need to assemble the data that
 
 Finally, in the directory that you created `input_data` create a new R script, which is where you will run and analyze `reconstructR`. The overall file structure should look as follows: 
 
-![File Structure]("man/file_structure.png")
+![File Structure](man/file_structure.png)
 
 
 ## Running `reconstructR`
