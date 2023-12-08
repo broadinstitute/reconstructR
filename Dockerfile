@@ -20,7 +20,7 @@ RUN apt-get -y -qq install \
     imagemagick libmagick++-dev \
     texlive-base texlive-latex-recommended texlive texlive-latex-extra texlive-extra-utils texlive-fonts-extra \
     fonts-roboto \
-    r-base r-base-dev r-cran-devtools r-cran-tidyverse \
+    r-base r-base-dev r-cran-devtools r-cran-tidyverse r-cran-rcpp r-cran-ape \
   && apt-get clean
 
 # Set default locale to en_US.UTF-8
