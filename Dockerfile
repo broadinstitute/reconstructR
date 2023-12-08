@@ -33,7 +33,8 @@ RUN locale-gen en_US.UTF-8
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
 
 # Install necessary R dependencies
-RUN R -e "for (lib in c( 'tidyverse', 'extraDistr', 'Rfast', 'istr', 'LaplacesDemon', 'ade4', 'kmer', 'phylogram', 'aphid', 'insect' )) { install.packages(lib, dependencies=TRUE); library(lib, character.only=TRUE) }"
+RUN R -e "for (lib in c( 'tidyverse', 'extraDistr', 'istr', 'LaplacesDemon', 'ade4', 'kmer', 'phylogram', 'aphid', 'insect' )) { install.packages(lib, dependencies=TRUE); library(lib, character.only=TRUE) }"
+RUN R -e "devtools::install_github('RfastOfficial/Rfast', dependencies=TRUE); library(Rfast)"
 
 # Install reconstructR R package -- invalidate cache any time github main branch updates
 ADD https://api.github.com/repos/broadinstitute/reconstructR/git/refs/heads/main version.json
