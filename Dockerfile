@@ -30,11 +30,11 @@ RUN locale-gen en_US.UTF-8
 ENV LANG="en_US.UTF-8" LANGUAGE="en_US:en" LC_ALL="en_US.UTF-8"
 
 # Install necessary R dependencies
-RUN R --vanilla -e "for (lib in c( 'Rfast', 'LaplacesDemon', 'kmer', 'phylogram', 'aphid', 'insect' )) { install.packages(lib, dependencies=TRUE); library(lib, character.only=TRUE) }"
+RUN R -e "for (lib in c( 'Rfast', 'LaplacesDemon', 'kmer', 'phylogram', 'aphid', 'insect' )) { install.packages(lib, dependencies=TRUE); library(lib, character.only=TRUE) }"
 
 # Install reconstructR R package -- invalidate cache any time github main branch updates
 ADD https://api.github.com/repos/broadinstitute/reconstructR/git/refs/heads/main version.json
-RUN R --vanilla -e "devtools::install_github('broadinstitute/reconstructR', dependencies=TRUE, upgrade='never'); library(reconstructR)"
+RUN R -e "devtools::install_github('broadinstitute/reconstructR', dependencies=TRUE, upgrade='never'); library(reconstructR)"
 
 # Bash prompt
 CMD ["/bin/bash"]
