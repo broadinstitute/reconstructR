@@ -5,15 +5,13 @@ LABEL maintainer "Daniel Park <dpark@broadinstitute.org>"
 # non-interactive session just for build
 ARG DEBIAN_FRONTEND=noninteractive
 
-# update apt database and install R apt repo
+# update apt database and install R apt repo; install all desired packages
 RUN apt-get update && \
   apt-get -y -qq install software-properties-common && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
   add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/' && \
-  apt-get update
-
-# install all desired packages
-RUN apt-get -y -qq install \
+  apt-get update && \
+  apt-get -y -qq install \
     less nano vim git wget curl jq zstd pigz parallel locales \
     gnupg libssl-dev libcurl4-openssl-dev \
     libgsl-dev libxml2 libxml2-dev \
