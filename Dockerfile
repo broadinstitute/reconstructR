@@ -14,7 +14,7 @@ RUN apt-get update && \
 
 # install all desired packages
 RUN apt-get -y -qq install \
-    less nano vim git wget curl jq zstd parallel locales \
+    less nano vim git wget curl jq zstd pigz parallel locales \
     gnupg libssl-dev libcurl4-openssl-dev \
     libgsl-dev libxml2 libxml2-dev \
     imagemagick libmagick++-dev \
