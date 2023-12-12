@@ -35,9 +35,9 @@ RUN R -e "for (lib in c( 'LaplacesDemon', 'kmer', 'phylogram', 'aphid', 'insect'
 # Rfast in CRAN is broken, install from github
 RUN R -e "devtools::install_github('RfastOfficial/Rfast', dependencies=TRUE); library(Rfast)"
 
-# Install reconstructR R package -- invalidate cache any time github main branch updates
-ADD https://api.github.com/repos/broadinstitute/reconstructR/git/refs/heads/main version.json
-RUN R -e "devtools::install_github('broadinstitute/reconstructR', dependencies=TRUE, upgrade='never'); library(reconstructR)"
+# Install reconstructR R package
+COPY . /opt/reconstructR
+RUN R -e "devtools::install_local("/opt/reconstructR", dependencies=TRUE, upgrade='never'); library(reconstructR)"
 
 # Bash prompt
 CMD ["/bin/bash"]
