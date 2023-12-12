@@ -37,7 +37,7 @@ RUN R -e "devtools::install_github('RfastOfficial/Rfast', dependencies=TRUE); li
 
 # Install reconstructR R package
 COPY . /opt/reconstructR
-RUN R -e "devtools::install_local("/opt/reconstructR", dependencies=TRUE, upgrade='never'); library(reconstructR)"
+RUN R -e "devtools::install_local('/opt/reconstructR', dependencies=TRUE, upgrade='never'); library(reconstructR)"
 
 # Bash prompt
 CMD ["/bin/bash"]
