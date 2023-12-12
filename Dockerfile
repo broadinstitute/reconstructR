@@ -5,16 +5,14 @@ LABEL maintainer "Daniel Park <dpark@broadinstitute.org>"
 # non-interactive session just for build
 ARG DEBIAN_FRONTEND=noninteractive
 
-# update apt database and install R apt repo
+# update apt database and install R apt repo; install all desired packages
 RUN apt-get update && \
   apt-get -y -qq install software-properties-common && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9 && \
   add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/' && \
-  apt-get update
-
-# install all desired packages
-RUN apt-get -y -qq install \
-    less nano vim git wget curl jq zstd parallel locales \
+  apt-get update && \
+  apt-get -y -qq install \
+    less nano vim git wget curl jq zstd pigz parallel locales \
     gnupg libssl-dev libcurl4-openssl-dev \
     libgsl-dev libxml2 libxml2-dev \
     imagemagick libmagick++-dev \
@@ -35,9 +33,9 @@ RUN R -e "for (lib in c( 'LaplacesDemon', 'kmer', 'phylogram', 'aphid', 'insect'
 # Rfast in CRAN is broken, install from github
 RUN R -e "devtools::install_github('RfastOfficial/Rfast', dependencies=TRUE); library(Rfast)"
 
-# Install reconstructR R package -- invalidate cache any time github main branch updates
-ADD https://api.github.com/repos/broadinstitute/reconstructR/git/refs/heads/main version.json
-RUN R -e "devtools::install_github('broadinstitute/reconstructR', dependencies=TRUE, upgrade='never'); library(reconstructR)"
+# Install reconstructR R package
+COPY . /opt/reconstructR
+RUN R -e "devtools::install_local('/opt/reconstructR', dependencies=TRUE, upgrade='never'); library(reconstructR)"
 
 # Bash prompt
 CMD ["/bin/bash"]
