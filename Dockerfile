@@ -38,4 +38,5 @@ COPY . /opt/reconstructR
 RUN R -e "devtools::install_local('/opt/reconstructR', dependencies=TRUE, upgrade='never'); library(reconstructR)"
 
 # Bash prompt
+ENV PATH="/opt/reconstructR/scripts:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 CMD ["/bin/bash"]
