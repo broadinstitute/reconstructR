@@ -101,7 +101,7 @@ run_mcmc <- function(
   if(is.null(prior_params)){
     # For each of the epidemiological parameters, specify the standard deviation of the (normally-distributed) proposal density
     prior_params <- list()
-    prior_params$alpha <- c(1, 1)
+    prior_params$alpha <- c(1, 1e6)
   }
 
   if(is.null(vars)){
